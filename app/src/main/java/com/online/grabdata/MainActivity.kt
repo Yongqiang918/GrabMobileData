@@ -1,15 +1,7 @@
 package com.online.grabdata
 
-import CaptureAllData.obtainHardwareInforData
-import CaptureAllData.obtainInstalledAppData
-import CaptureAllData.obtainRuningAppData
-import CaptureAllData.obtainSimulatorData
-import CaptureAllData.obtainSimulatorDetailsData
-import android.Manifest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.online.grabdata.bean.SimulatorBean
-import com.online.grabdata.bean.SimulatorDetaisBean
 
 
 class MainActivity : AppCompatActivity() {
@@ -107,7 +99,6 @@ class MainActivity : AppCompatActivity() {
 //                }
 //
 //            })
-
 
 
     }
