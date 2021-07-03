@@ -705,8 +705,9 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
         return activities
     }
 
-    private fun getDeviceId(manager: TelephonyManager): String {
+    private fun getDeviceId(): String {
         var deviceId = ""
+        val manager = application.getSystemService(Service.TELEPHONY_SERVICE) as TelephonyManager
         try {
             deviceId = manager.getDeviceId()
         } catch (e: Exception) {
