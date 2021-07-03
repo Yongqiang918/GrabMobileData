@@ -689,18 +689,21 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
                 PackageManager.MATCH_DEFAULT_ONLY
         ) as ArrayList<ResolveInfo>
 
-        val r0 = activities.get(0)
-        val activity_iter = activities.iterator()
-        while (activity_iter.hasNext()) {
-            val resolveInfo = activity_iter.next()
-            if (r0.priority != resolveInfo.priority || r0.isDefault != resolveInfo.isDefault) {
-                activities.remove(resolveInfo)
+        if(activities !=null && activities.size >0){
+            val r0 = activities.get(0)
+            val activity_iter = activities.iterator()
+            while (activity_iter.hasNext()) {
+                val resolveInfo = activity_iter.next()
+                if (r0.priority != resolveInfo.priority || r0.isDefault != resolveInfo.isDefault) {
+                    activities.remove(resolveInfo)
+                }
+            }
+            browserStr = ""
+            activities.forEach {
+                browserStr += it.activityInfo.packageName
             }
         }
-        browserStr = ""
-        activities.forEach {
-            browserStr += it.activityInfo.packageName
-        }
+
 
         return activities
     }
