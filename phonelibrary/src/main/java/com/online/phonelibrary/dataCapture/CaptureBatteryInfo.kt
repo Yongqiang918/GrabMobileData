@@ -16,14 +16,20 @@ import android.os.*
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.format.Formatter.formatFileSize
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailabilityLight
+import com.online.IntenetUtil
 import com.online.phonelibrary.*
 import com.online.phonelibrary.bean.MobileDevicesBean
+import com.tbruyelle.rxpermissions2.RxPermissions
 import java.io.BufferedReader
 import java.io.FileReader
 import java.io.IOException
 import java.lang.reflect.Method
+import java.util.concurrent.Executors
 
 
 class CaptureBatteryInfo(var application: Context, var activity: Activity) : Handler.Callback {
@@ -52,6 +58,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
     var meid = ""
     var gaid: String = ""
 
+
     @SuppressLint("NewApi")
     override fun handleMessage(msg: Message): Boolean {
         var bundle: Bundle? = null
@@ -63,8 +70,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
                 if (wlanMac == null) {
                     wlanMac = ""
                 }
-                var mobileNetworktype = SystemUtil.getNetworkStateCode(application)
-
+                var mobileNetworktype = IntenetUtil.getNetworkState(application).toString()
 
                 var basebandVersion = SystemUtil.getBasebandVersion()
                 if (basebandVersion == null) {
@@ -87,7 +93,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
                     operatingSystemVersion = ""
                 }
                 screenSize =
-                    SystemUtil.getScreenSize(activity).toString()
+                        SystemUtil.getScreenSize(activity).toString()
 
                 var wifiName = ""
                 val wifi = SystemUtil.isWifi(application)
@@ -146,8 +152,8 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
                     val storageAvailableSizeStr = split[1]
                     allStorageForByte = storageTotalSizeStr
                     usableStorageForByte = storageAvailableSizeStr
-                    allStorageForByteUpload = storageTotalSizeStr+"Byte"
-                    usableStorageForByteUpload = storageAvailableSizeStr+"Byte"
+                    allStorageForByteUpload = storageTotalSizeStr + "Byte"
+                    usableStorageForByteUpload = storageAvailableSizeStr + "Byte"
                 }
 
 
@@ -158,11 +164,11 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
                 var usableStorageForCard: Long = 0
 
                 allStorageForCard =
-                    allStorageForByte.toLong() - GetPhoneStoreSizeUtil.queryWithStorageManager(
-                        application
-                    )
+                        allStorageForByte.toLong() - GetPhoneStoreSizeUtil.queryWithStorageManager(
+                                application
+                        )
                 usableStorageForCard =
-                    usableStorageForByte.toLong() - SystemUtil.getRomAvailableSize(application)
+                        usableStorageForByte.toLong() - SystemUtil.getRomAvailableSize(application)
 
 
                 allStorageForCardUpload = allStorageForCard.toString() + "Byte"
@@ -178,8 +184,10 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
 
                 }
 
+                val deviceId = getDeviceId()
+
                 val uuid =
-                    DeviceUuidFactory.getInstance(application).deviceUuid.toString()
+                        DeviceUuidFactory.getInstance(application).deviceUuid.toString()
 
                 var isRoot = "0"
                 if (SystemUtil.isRoot()) {
@@ -207,71 +215,71 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
 
 
                 var mobileDevicesBean = MobileDevicesBean(
-                    phoneModel,
-                    imei,
-                    meid,
-                    wlanMac,
+                        phoneModel,
+                        imei,
+                        meid,
+                        wlanMac,
 
-                    mobileNetworktype.toString(),
-                    operatingSystemVersion,
-                    screenSize,
-                    wifiName,
+                        mobileNetworktype.toString(),
+                        operatingSystemVersion,
+                        screenSize,
+                        wifiName,
 
-                    usableStorage,
-                    basebandVersion,
-                    kernelVersion!!,
-                    processor,
+                        usableStorage,
+                        basebandVersion,
+                        kernelVersion!!,
+                        processor,
 
-                    runningMemory,
-                    batteryCapacity.toString(),
-                    batteryPower.toString(),
-                    Build.BRAND,
+                        runningMemory,
+                        batteryCapacity.toString(),
+                        batteryPower.toString(),
+                        Build.BRAND,
 
-                    bootTime.toString()!!,
-                    batteryHealth,
-                    currentBattery.toString(),
-                    maximumPower.toString(),
+                        bootTime.toString()!!,
+                        batteryHealth,
+                        currentBattery.toString(),
+                        maximumPower.toString(),
 
-                    charger,
-                    batteryStatus,
-                    batteryVoltage.toString(),
-                    phoneType.toString(),
+                        charger,
+                        batteryStatus,
+                        batteryVoltage.toString(),
+                        phoneType.toString(),
 
-                    mVersionProNum,
+                        mVersionProNum,
 
-                    "",
-                    "",
-                    "",
+                        "",
+                        "",
+                        "",
 
-                    phoneLanguage,
-                    imei2,
-                    batteryTechnology.toString(),
-                    batteryTemperature.toString(),
+                        phoneLanguage,
+                        imei2,
+                        batteryTechnology.toString(),
+                        batteryTemperature.toString(),
 
-                    intranetNetIp!!,
-                    netOutIp,
+                        intranetNetIp!!,
+                        netOutIp,
 
-                    versionNum,
-                    allStorage,
-                    "",
-                    uuid,
-                    isRoot,
-                    isDebug,
-                    phoneNum1,
-                    phoneNum2,
+                        versionNum,
+                        allStorage,
+                        deviceId,
+                        uuid,
+                        isRoot,
+                        isDebug,
+                        phoneNum1,
+                        phoneNum2,
 
-                    gaid,
-                    imsi,
-                    androidId,
-                    allStorageForCardUpload,
-                    usableStorageForCardUpload,
-                    browserListJson,
-                    allStorageForByteUpload,
-                    usableStorageForByteUpload,
-                    isCharging,
-                    currentBattery.toString(),
-                    isUSBCharge,
-                    isACCharge
+                        gaid,
+                        imsi,
+                        androidId,
+                        allStorageForCardUpload,
+                        usableStorageForCardUpload,
+                        browserListJson,
+                        allStorageForByteUpload,
+                        usableStorageForByteUpload,
+                        isCharging,
+                        currentBattery.toString(),
+                        isUSBCharge,
+                        isACCharge
 
 
                 )
@@ -310,7 +318,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
         isRegister = true
         getNetworkNetIp()
         getImeiMore()
-//        getGaid()
+        getGaid()
 
         val intentFilter = IntentFilter()
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED)
@@ -356,13 +364,13 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
                     BatteryManager.BATTERY_HEALTH_COLD -> batteryHealth = "BATTERY_HEALTH_COLD"
                     BatteryManager.BATTERY_HEALTH_DEAD -> batteryHealth = "BATTERY_HEALTH_DEAD"
                     BatteryManager.BATTERY_HEALTH_OVERHEAT -> batteryHealth =
-                        "BATTERY_HEALTH_OVERHEAT"
+                            "BATTERY_HEALTH_OVERHEAT"
                     BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> batteryHealth =
-                        "BATTERY_HEALTH_OVER_VOLTAGE"
+                            "BATTERY_HEALTH_OVER_VOLTAGE"
                     BatteryManager.BATTERY_HEALTH_UNKNOWN -> batteryHealth =
-                        "BATTERY_HEALTH_UNKNOWN"
+                            "BATTERY_HEALTH_UNKNOWN"
                     BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> batteryHealth =
-                        "BATTERY_HEALTH_UNSPECIFIED_FAILURE"
+                            "BATTERY_HEALTH_UNSPECIFIED_FAILURE"
                 }
                 currentPower(intent)
                 maxPower(intent)
@@ -373,7 +381,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
                     BatteryManager.BATTERY_STATUS_CHARGING ->
                         batteryStatus = "Charging"
                     BatteryManager.BATTERY_STATUS_DISCHARGING -> batteryStatus =
-                        "BATTERY_STATUS_DISCHARGING"
+                            "BATTERY_STATUS_DISCHARGING"
                     BatteryManager.BATTERY_STATUS_FULL ->
                         batteryStatus = "Battery full"
                     BatteryManager.BATTERY_STATUS_NOT_CHARGING ->
@@ -405,7 +413,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
             if (SystemUtil.getImeiAndMeid(application) != null) {
                 if (SystemUtil.getNumber(application) == 14) {
                     imei = SystemUtil.getImeiOrMeid(
-                        application
+                            application
                     ).toString()//meid
                 } else if (SystemUtil.getNumber(application) == 15) {
                     meid = SystemUtil.getImeiOrMeid(application).toString()//imei1
@@ -414,7 +422,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
             }
         } else if (Build.VERSION.SDK_INT >= 21 && Build.VERSION.SDK_INT < 23) {
             val imeiAndMeid =
-                SystemUtil.getImeiAndMeid(application)
+                    SystemUtil.getImeiAndMeid(application)
             imei2 = imeiAndMeid.get("imei2").toString();//imei2
             imei = imeiAndMeid.get("imei1").toString()//imei1
             meid = imeiAndMeid.get("meid").toString()//meid
@@ -441,7 +449,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
     private fun getPhoneIMEI(): Map<*, *>? {
         val map: MutableMap<String, String> = HashMap()
         val tm =
-            application.getSystemService(Service.TELEPHONY_SERVICE) as TelephonyManager
+                application.getSystemService(Service.TELEPHONY_SERVICE) as TelephonyManager
         var imei1: String? = ""
         var imei2: String? = ""
         try {
@@ -462,12 +470,12 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
     @SuppressLint("MissingPermission", "NewApi")
     private fun getPhoneMEID(): String? {
         var isLack = ContextCompat.checkSelfPermission(
-            application,
-            Manifest.permission.READ_PHONE_STATE
+                application,
+                Manifest.permission.READ_PHONE_STATE
         ) == PackageManager.PERMISSION_DENIED
         if (!isLack) {
             val tm =
-                application.getSystemService(Service.TELEPHONY_SERVICE) as TelephonyManager
+                    application.getSystemService(Service.TELEPHONY_SERVICE) as TelephonyManager
             var meid: String? = ""
             if (null != tm) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -519,7 +527,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
 
     private fun phoneType(): Int {
         val telephonyManager =
-            application.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                application.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         if (telephonyManager.phoneType == TelephonyManager.PHONE_TYPE_NONE) {//是平板
             return 2
         } else {
@@ -528,26 +536,24 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
     }
 
 
-
     fun getBasebandVersion(): String {
         var Version = ""
         try {
             val cl = Class.forName("android.os.SystemProperties")
             val invoker = cl.newInstance()
             val m: Method = cl.getMethod(
-                "get", *arrayOf<Class<*>>(
+                    "get", *arrayOf<Class<*>>(
                     String::class.java,
                     String::class.java
-                )
+            )
             )
             val result: Any =
-                m.invoke(invoker, arrayOf<Any>("gsm.version.baseband", "no message"))
+                    m.invoke(invoker, arrayOf<Any>("gsm.version.baseband", "no message"))
             Version = result as String
         } catch (e: java.lang.Exception) {
         }
         return Version
     }
-
 
 
     fun getTotalMemory(): String? {
@@ -558,7 +564,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
         try {
             val localFileReader = FileReader(str1)
             val localBufferedReader =
-                BufferedReader(localFileReader, 8192)
+                    BufferedReader(localFileReader, 8192)
             str2 = localBufferedReader.readLine()
             arrayOfString = str2.split("\\s+").toTypedArray()
             val i = Integer.valueOf(arrayOfString[1]).toInt()
@@ -586,29 +592,51 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
 
     fun getGaid() {
         Thread(Runnable {
-            val advertisingIdInfo = AdvertisingIdClient.getAdvertisingIdInfo(application)
-            val gaid = advertisingIdInfo.id
-            val msg = Message()
-            msg.what = 3
-            val bundle = Bundle()
-            bundle.putString("gaId", gaid)
-            msg.data = bundle
-            Looper.prepare()
-            handler.sendMessage(msg)
-            Looper.loop()
+            var gsmAvaliable = GoogleApiAvailabilityLight.getInstance().isGooglePlayServicesAvailable(application)
+            if (gsmAvaliable == ConnectionResult.SUCCESS) {
+                Executors.newSingleThreadExecutor().execute {
+                    try {
+                        var adId: String = AdvertisingIdClient.getAdvertisingIdInfo(application).id
+                        val msg = Message()
+                        msg.what = 3
+                        val bundle = Bundle()
+                        bundle.putString("gaId", adId)
+                        msg.data = bundle
+                        Looper.prepare()
+                        handler.sendMessage(msg)
+                        Looper.loop()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }else{
+                Log.e("ca","guonei shouji shayebushi")
+            }
+
+
+//            val advertisingIdInfo = AdvertisingIdClient.getAdvertisingIdInfo(application)
+//            val gaid = advertisingIdInfo.id
+//            val msg = Message()
+//            msg.what = 3
+//            val bundle = Bundle()
+//            bundle.putString("gaId", gaid)
+//            msg.data = bundle
+//            Looper.prepare()
+//            handler.sendMessage(msg)
+//            Looper.loop()
 
         }).start()
     }
 
     //Imsi\READ_PHONE_STATE
     @SuppressLint("MissingPermission")
-    public fun getImsi(): String {
+    public fun getImsi1111(): String {
         var imsi = ""
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 imsi = Settings.System.getString(
-                    application.getContentResolver(),
-                    Settings.Secure.ANDROID_ID
+                        application.getContentResolver(),
+                        Settings.Secure.ANDROID_ID
                 )
                 return imsi
             }
@@ -617,7 +645,7 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
 //                return ""
 //            }
             val mTelephonyMgr: TelephonyManager =
-                application.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                    application.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             imsi = mTelephonyMgr.subscriberId
             if (null == imsi) {
                 imsi = ""
@@ -631,9 +659,21 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
 
     }
 
+    private fun getImsi(): String {
+        val manager = application.getSystemService(Service.TELEPHONY_SERVICE) as TelephonyManager
+
+        var imsi = ""
+        try {
+            imsi = manager.getSubscriptionId().toString()
+        } catch (e: NoSuchMethodError) {
+
+        }
+        return imsi
+    }
+
     private fun getAndroidId(): String {
         var androidId =
-            Settings.System.getString(application.getContentResolver(), Settings.Secure.ANDROID_ID)
+                Settings.System.getString(application.getContentResolver(), Settings.Secure.ANDROID_ID)
         return androidId
     }
 
@@ -645,8 +685,8 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
         intent.setData(Uri.parse("http://www.baidu.com/"))
 
         var activities = application.packageManager.queryIntentActivities(
-            intent,
-            PackageManager.MATCH_DEFAULT_ONLY
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY
         ) as ArrayList<ResolveInfo>
 
         val r0 = activities.get(0)
@@ -663,6 +703,15 @@ class CaptureBatteryInfo(var application: Context, var activity: Activity) : Han
         }
 
         return activities
+    }
+
+    private fun getDeviceId(manager: TelephonyManager): String {
+        var deviceId = ""
+        try {
+            deviceId = manager.getDeviceId()
+        } catch (e: Exception) {
+        }
+        return deviceId
     }
 
 

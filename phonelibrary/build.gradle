@@ -33,6 +33,9 @@ android {
     }
 }
 
+repositories {
+    maven { url "https://jitpack.io" }
+}
 dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -53,4 +56,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics:17.4.0'
     implementation 'com.google.firebase:firebase-core:17.4.0'
     implementation 'com.google.firebase:firebase-messaging:20.1.6'
+
+
+
 }
